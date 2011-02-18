@@ -1,0 +1,54 @@
+
+twarchive - a simple twitter archiving tool
+
+twarchive was created to satsify our need for a simple way to collect and save tweets that
+were either issued by the ADS team (@adsabs), were directed to @adsabs, or referenced the 
+ADS website (ie, contained the string "adsabs"). Not finding an easy, non-free solution
+to this problem we decided to roll our own using python and mongo db.
+
+This is very much an infant project at this point, but will hopefully become more useful
+over time as we add additional ways to view the archived tweets.
+
+The idea is to fetch tweets on a daily basis (ie, cronjob) via the http://search.twitter.com 
+json API, stash them in mongo, and use either mongo or a web.py interface to pull them back 
+out again. 
+
+Fetching is done using a simple python shell script. Each response from the json API contains 
+some 'meta' information. Tweets are stored in a mongo collection called 'tweets' and the 
+metadata returned for each query is stored in a collection called 'queries'. 
+
+Software needed:
+ - python (v2.4)
+ - MongoDB (v1.64)
+ - pymongo library (v1.9)
+ - simplejson
+ - web.py (v.34)
+
+Note: software versions mentioned are strictly what we're using internally and are testing 
+against. Dunno about required versions, but nothing fancy going on just yet, so you're probably 
+OK with whatever.
+ 
+Usage:
+
+1. get the software via git clone
+2. make sure MongoDB is running
+3. issue a query, eg, "./twitter2mongo.py foo bar". The mongo database name will be taken 
+    from the first query term, in this case, "foo"
+4. view the stored tweets via http://yourhost/twarchive/foo/tweets
+5. view the query history via http://yourhost/twarchive/foo/queries
+6. you can also, of course, pull the tweets directly out of mongodb. additional methods for doing 
+    this will hopefully be added to the twarchive module over time
+
+Example apache config for the web.py script:
+
+    # config for twarchive app
+    WSGIScriptAlias /twarchive /var/www/twarchive/www/www.py
+    <Directory /var/www/twarchive/www>
+        Order Allow,Deny
+        Allow from all 
+    </Directory>
+
+Basic example query:
+
+# fetch for tweets containing "username" and also tweets from @username and to @username
+./twitter2mongo.py username from:username to:username
